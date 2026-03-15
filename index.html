@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lead CRM Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<header>
+  <img src="Images/image.png" alt="Company Logo" class="logo">
+</header>
+
+<div class="container">
+
+  <!-- Dashboard Stats -->
+  <div class="stats">
+    <div class="card new">
+      <h2 id="newCount">0</h2>
+      <p>New Leads</p>
+    </div>
+    <div class="card contacted">
+      <h2 id="contactedCount">0</h2>
+      <p>Contacted</p>
+    </div>
+    <div class="card converted">
+      <h2 id="convertedCount">0</h2>
+      <p>Converted</p>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="chart-container">
+    <canvas id="leadChart"></canvas>
+  </div>
+
+  <!-- Search -->
+  <input type="text" id="searchInput" placeholder="Search by Name or Email..." onkeyup="searchLeads()" class="search-input">
+
+  <!-- Leads Table -->
+  <div class="leads">
+    <h2>All Leads</h2>
+    <select id="filter" onchange="filterLeads()">
+      <option value="all">All Leads</option>
+      <option value="new">New</option>
+      <option value="contacted">Contacted</option>
+      <option value="converted">Converted</option>
+    </select>
+    <table>
+      <thead>
+        <tr>
+          <th onclick="sortLeads('name')">Name ⬍</th>
+          <th onclick="sortLeads('email')">Email ⬍</th>
+          <th>Status</th>
+          <th>Notes</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="leadList"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- Add/Edit Lead Modal -->
+<div id="leadModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <h2 id="modalTitle">Add Lead</h2>
+    <input id="modalName" placeholder="Name">
+    <input id="modalEmail" placeholder="Email">
+    <select id="modalStatus">
+      <option value="new">New</option>
+      <option value="contacted">Contacted</option>
+      <option value="converted">Converted</option>
+    </select>
+    <input id="modalNotes" placeholder="Notes">
+    <button id="modalSubmit" class="add" onclick="submitModal()">Add Lead</button>
+  </div>
+</div>
+
+<!-- Toast Notifications -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
