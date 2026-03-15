@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "mini-crm",
   "version": "1.0.0",
   "description": "Mini CRM project",
@@ -9,6 +10,19 @@
   },
   "author": "",
   "license": "ISC",
+=======
+  "name": "future_fs_02",
+  "version": "1.0.0",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+>>>>>>> 8696857e2a2d6c880fe1721271856b978a591fc7
   "dependencies": {
     "body-parser": "^2.2.2",
     "cors": "^2.8.6",
@@ -18,4 +32,8 @@
   "devDependencies": {
     "nodemon": "^3.1.14"
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 8696857e2a2d6c880fe1721271856b978a591fc7
