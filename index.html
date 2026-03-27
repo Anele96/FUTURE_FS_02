@@ -1,87 +1,193 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Lead CRM Dashboard</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8">
+<title>Lamp Login</title>
+
+<style>
+body {
+  margin: 0;
+  height: 100vh;
+  background: radial-gradient(circle at top, #0f172a, #020617);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: Arial;
+  color: white;
+}
+
+/* Rope */
+#cord {
+  position: absolute;
+  top: 0;
+  width: 6px;
+  height: 140px;
+  background: linear-gradient(#ccc, #666);
+  cursor: pointer;
+}
+
+/* Lamp */
+.lamp {
+  position: absolute;
+  top: 140px;
+}
+
+.light {
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,200,1), transparent);
+  opacity: 0;
+  transition: 0.5s;
+  filter: blur(20px);
+}
+
+.lamp.on .light {
+  opacity: 1;
+}
+
+/* Login box */
+.login-box {
+  position: absolute;
+  bottom: 120px;
+  width: 300px;
+  padding: 20px;
+  background: rgba(30,41,59,0.9);
+  border-radius: 10px;
+  text-align: center;
+
+  opacity: 0;
+  transform: translateY(20px);
+  transition: 0.5s;
+}
+
+.login-box.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.login-box input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 5px;
+  border: none;
+}
+
+.login-box button {
+  width: 100%;
+  padding: 10px;
+  background: #22c55e;
+  border: none;
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+/* Demo box */
+.demo-box {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: 300px;
+  padding: 15px;
+  background: rgba(30,41,59,0.9);
+  border-radius: 10px;
+  text-align: center;
+  border: 1px solid #22c55e;
+
+  color: #e2e8f0;
+  font-size: 14px;
+
+  box-shadow: 0 0 10px rgba(34,197,94,0.3);
+  transition: 0.4s;
+}
+</style>
 </head>
+
 <body>
 
-<header>
-  <img src="Images/image.png" alt="Company Logo" class="logo">
-</header>
+<!-- ROPE -->
+<div id="cord"></div>
 
-<div class="container">
-
-  <!-- Dashboard Stats -->
-  <div class="stats">
-    <div class="card new">
-      <h2 id="newCount">0</h2>
-      <p>New Leads</p>
-    </div>
-    <div class="card contacted">
-      <h2 id="contactedCount">0</h2>
-      <p>Contacted</p>
-    </div>
-    <div class="card converted">
-      <h2 id="convertedCount">0</h2>
-      <p>Converted</p>
-    </div>
-  </div>
-
-  <!-- Chart -->
-  <div class="chart-container">
-    <canvas id="leadChart"></canvas>
-  </div>
-
-  <!-- Search -->
-  <input type="text" id="searchInput" placeholder="Search by Name or Email..." onkeyup="searchLeads()" class="search-input">
-
-  <!-- Leads Table -->
-  <div class="leads">
-    <h2>All Leads</h2>
-    <select id="filter" onchange="filterLeads()">
-      <option value="all">All Leads</option>
-      <option value="new">New</option>
-      <option value="contacted">Contacted</option>
-      <option value="converted">Converted</option>
-    </select>
-    <table>
-      <thead>
-        <tr>
-          <th onclick="sortLeads('name')">Name ⬍</th>
-          <th onclick="sortLeads('email')">Email ⬍</th>
-          <th>Status</th>
-          <th>Notes</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="leadList"></tbody>
-    </table>
-  </div>
-
+<!-- LAMP -->
+<div class="lamp" id="lamp">
+  <div class="light"></div>
 </div>
 
-<!-- Add/Edit Lead Modal -->
-<div id="leadModal" class="modal">
-  <div class="modal-content">
-    <span class="close" onclick="closeModal()">&times;</span>
-    <h2 id="modalTitle">Add Lead</h2>
-    <input id="modalName" placeholder="Name">
-    <input id="modalEmail" placeholder="Email">
-    <select id="modalStatus">
-      <option value="new">New</option>
-      <option value="contacted">Contacted</option>
-      <option value="converted">Converted</option>
-    </select>
-    <input id="modalNotes" placeholder="Notes">
-    <button id="modalSubmit" class="add" onclick="submitModal()">Add Lead</button>
-  </div>
+<!-- LOGIN BOX -->
+<div class="login-box" id="loginBox">
+  <h3>Login</h3>
+  <input id="username" placeholder="Username">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="login()">Login</button>
 </div>
 
-<!-- Toast Notifications -->
-<div class="toast-container" id="toastContainer"></div>
+<!-- DEMO BOX -->
+<div class="demo-box" id="demoBox">
+  <h4>🔐 Demo Access</h4>
+  <p><strong>Username:</strong> admin</p>
+  <p><strong>Password:</strong> 1234</p>
+  <small>Use these credentials to access the project</small>
+</div>
 
-<script src="script.js"></script>
+<script>
+// Auto skip login if already logged in
+if (localStorage.getItem("isLoggedIn") === "true") {
+  window.location.href = "./admin.html";
+}
+
+// ELEMENTS
+const cord = document.getElementById("cord");
+const lamp = document.getElementById("lamp");
+const loginBox = document.getElementById("loginBox");
+const demoBox = document.getElementById("demoBox");
+
+let isOn = false;
+
+// LAMP TOGGLE + LOGIN + DEMO BOX
+cord.addEventListener("click", () => {
+  isOn = !isOn;
+
+  lamp.classList.toggle("on");
+  loginBox.classList.toggle("show");
+
+  // Hide demo when login shows
+  if (isOn) {
+    demoBox.style.opacity = "0";
+    demoBox.style.visibility = "hidden";
+  } else {
+    demoBox.style.opacity = "1";
+    demoBox.style.visibility = "visible";
+  }
+});
+
+// DEFAULT USERS
+if (!localStorage.getItem("users")) {
+  localStorage.setItem(
+    "users",
+    JSON.stringify([{ username: "admin", password: "1234" }])
+  );
+}
+
+// LOGIN FUNCTION
+function login() {
+  const u = username.value.trim();
+  const p = password.value.trim();
+
+  const users = JSON.parse(localStorage.getItem("users"));
+  const user = users.find(x => x.username === u && x.password === p);
+
+  if (user) {
+    localStorage.setItem("isLoggedIn", "true");
+    window.location.href = "./admin.html";
+  } else {
+    alert("Wrong username or password");
+  }
+}
+</script>
+
 </body>
 </html>

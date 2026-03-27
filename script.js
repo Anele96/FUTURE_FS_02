@@ -1,175 +1,174 @@
 let allLeads = [];
 let editingId = null;
-let leadChart;
+let statusChart = null;
 
-// Show Toast Notification
-function showToast(message, type="success") {
-    const toastContainer = document.getElementById('toastContainer');
-    const toast = document.createElement('div');
-    toast.className = `toast ${type} show`;
-    toast.innerText = message;
-    toastContainer.appendChild(toast);
-    setTimeout(() => {
-        toast.classList.remove('show');
-        toast.remove();
-    }, 2500);
+// CHECK LOGIN
+if(localStorage.getItem("isLoggedIn") !== "true") window.location.href="index.html";
+
+// LOAD PROFILE PIC
+if(localStorage.getItem("profilePic")){
+  document.getElementById("profilePic").src = localStorage.getItem("profilePic");
 }
 
-// Load Leads from server
-async function loadLeads() {
-    const res = await fetch("http://localhost:5000/leads");
-    allLeads = await res.json();
-    updateDashboard();
-    displayLeads(allLeads);
-    updateChart();
-}
-
-// Add or Update Lead
-async function addLead() {
-    const name = document.getElementById("name").value;
-    const email = document.getElementById("email").value;
-    const status = document.getElementById("status").value;
-    const notes = document.getElementById("notes").value;
-
-    if(!name || !email){
-        alert("Please enter name and email");
-        return;
-    }
-
-    if(editingId) {
-        // Update Lead
-        await fetch(`http://localhost:5000/leads/${editingId}`, {
-            method:"PUT",
-            headers:{"Content-Type":"application/json"},
-            body: JSON.stringify({name,email,status,notes})
-        });
-        showToast("Lead updated!", "update");
-        editingId = null;
-        document.getElementById("submitBtn").innerText = "Add Lead";
-        document.getElementById("submitBtn").classList.remove("update");
-        document.getElementById("submitBtn").classList.add("add");
-    } else {
-        // Add Lead
-        await fetch("http://localhost:5000/leads",{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body: JSON.stringify({name,email,status,notes})
-        });
-        showToast("Lead added!", "success");
-    }
-
-    clearForm();
-    loadLeads();
-}
-
-// Clear Form
-function clearForm() {
-    document.getElementById("name").value = "";
-    document.getElementById("email").value = "";
-    document.getElementById("notes").value = "";
-    document.getElementById("status").value = "new";
-}
-
-// Display Leads
-function displayLeads(leads) {
-    const list = document.getElementById("leadList");
-    list.innerHTML = "";
-    leads.forEach(lead => {
-        list.innerHTML += `
-        <tr>
-            <td>${lead.name}</td>
-            <td>${lead.email}</td>
-            <td>${lead.status}</td>
-            <td>${lead.notes}</td>
-            <td>
-                <button class="edit" onclick="editLead('${lead._id}')">Edit</button>
-                <button class="delete" onclick="deleteLead('${lead._id}')">Delete</button>
-            </td>
-        </tr>`;
-    });
-}
-
-// Edit Lead
-function editLead(id) {
-    const lead = allLeads.find(l => l._id === id);
-    document.getElementById("name").value = lead.name;
-    document.getElementById("email").value = lead.email;
-    document.getElementById("notes").value = lead.notes;
-    document.getElementById("status").value = lead.status;
-    editingId = id;
-    document.getElementById("submitBtn").innerText = "Update Lead";
-    document.getElementById("submitBtn").classList.remove("add");
-    document.getElementById("submitBtn").classList.add("update");
-}
-
-// Delete Lead
-async function deleteLead(id){
-    await fetch(`http://localhost:5000/leads/${id}`,{method:"DELETE"});
-    showToast("Lead deleted!", "delete");
-    loadLeads();
-}
-
-// Filter Leads
-function filterLeads(){
-    const filter = document.getElementById("filter").value;
-    if(filter === "all") displayLeads(allLeads);
-    else displayLeads(allLeads.filter(l => l.status === filter));
-}
-
-// Update Dashboard Counts
-function updateDashboard(){
-    let newCount = 0, contactedCount = 0, convertedCount = 0;
-    allLeads.forEach(l => {
-        if(l.status==="new") newCount++;
-        if(l.status==="contacted") contactedCount++;
-        if(l.status==="converted") convertedCount++;
-    });
-    document.getElementById("newCount").innerText = newCount;
-    document.getElementById("contactedCount").innerText = contactedCount;
-    document.getElementById("convertedCount").innerText = convertedCount;
-}
-
-// Update Chart
-function updateChart() {
-    const ctx = document.getElementById('leadChart').getContext('2d');
-    const data = {
-        labels: ['New','Contacted','Converted'],
-        datasets: [{
-            label: 'Number of Leads',
-            data: [
-                allLeads.filter(l=>l.status==="new").length,
-                allLeads.filter(l=>l.status==="contacted").length,
-                allLeads.filter(l=>l.status==="converted").length
-            ],
-            backgroundColor: ['#3b82f6','#f59e0b','#10b981'],
-            borderRadius: 6
-        }]
+// PROFILE UPLOAD
+function openProfileUpload(){
+  const input = document.createElement("input");
+  input.type = "file"; input.accept = "image/*";
+  input.onchange = e => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+      localStorage.setItem("profilePic", reader.result);
+      document.getElementById("profilePic").src = reader.result;
     };
-    const config = {
-        type: 'bar',
-        data: data,
-        options: { responsive:true, plugins:{legend:{display:false}, title:{display:true,text:'Lead Status Overview'}} }
-    };
-    if(leadChart) leadChart.destroy();
-    leadChart = new Chart(ctx, config);
+    reader.readAsDataURL(file);
+  };
+  input.click();
 }
-// Sort
-function sortLeads(by){
-  const sorted = [...allLeads].sort((a,b)=>{
-    if(a[by].toLowerCase() < b[by].toLowerCase()) return -1;
-    if(a[by].toLowerCase() > b[by].toLowerCase()) return 1;
-    return 0;
+
+// LOGOUT
+function logout(){
+  localStorage.removeItem("isLoggedIn");
+  window.location.href="index.html";
+}
+
+// DARK/LIGHT MODE
+function toggleDarkMode(){
+  document.body.classList.toggle("light-mode");
+  localStorage.setItem("darkMode", document.body.classList.contains("light-mode") ? "light":"dark");
+}
+if(localStorage.getItem("darkMode") === "light") document.body.classList.add("light-mode");
+
+// SHOW SECTION
+function showSection(sectionId){
+  document.querySelectorAll(".section").forEach(s=>s.style.display="none");
+  document.getElementById(sectionId).style.display="block";
+}
+
+// LOAD LEADS
+if(!localStorage.getItem("leads")) localStorage.setItem("leads","[]");
+function loadLeads(){
+  allLeads = JSON.parse(localStorage.getItem("leads") || "[]");
+  displayLeads(allLeads);
+  drawGraph();
+}
+
+// DISPLAY LEADS
+function displayLeads(leads){
+  const tbody = document.getElementById("leadList");
+  tbody.innerHTML = "";
+  leads.forEach((l,i)=>{
+    const avatarHTML = l.avatar ? `<img src="${l.avatar}" class="lead-avatar">` : `<div class="avatar-initials">${l.name.charAt(0)}</div>`;
+    tbody.innerHTML += `<tr>
+      <td>${avatarHTML}</td>
+      <td>${l.name}</td>
+      <td>${l.email}</td>
+      <td>${l.status}</td>
+      <td>${l.notes}</td>
+      <td>
+        <button onclick="editLead(${i})">✏️ Edit</button>
+        <button onclick="deleteLead(${i})">🗑 Delete</button>
+      </td>
+    </tr>`;
   });
-  displayLeads(sorted);
-}
-function searchLeads() {
-    const query = document.getElementById("searchInput").value.toLowerCase();
-    const filtered = allLeads.filter(lead => 
-        lead.name.toLowerCase().includes(query) || 
-        lead.email.toLowerCase().includes(query)
-    );
-    displayLeads(filtered);
 }
 
-// Initial Load
-loadLeads();
+// MODAL OPEN/CLOSE
+function openModal(){
+  editingId=null;
+  document.getElementById("modalTitle").innerText="Add Lead";
+  document.getElementById("modalName").value="";
+  document.getElementById("modalEmail").value="";
+  document.getElementById("modalStatus").value="New";
+  document.getElementById("modalNotes").value="";
+  document.getElementById("modalAvatar").value="";
+  document.getElementById("leadModal").style.display="flex";
+}
+function closeModal(){ document.getElementById("leadModal").style.display="none"; }
+
+// SUBMIT MODAL
+function submitModal(){
+  const name=document.getElementById("modalName").value.trim();
+  const email=document.getElementById("modalEmail").value.trim();
+  const status=document.getElementById("modalStatus").value;
+  const notes=document.getElementById("modalNotes").value.trim();
+  const avatarInput=document.getElementById("modalAvatar");
+
+  if(!name||!email){ alert("Name and Email required!"); return; }
+  const leadObj={name,email,status,notes};
+
+  if(avatarInput.files[0]){
+    const reader=new FileReader();
+    reader.onload=()=>{ leadObj.avatar=reader.result; saveLead(leadObj); };
+    reader.readAsDataURL(avatarInput.files[0]);
+  }else{
+    if(editingId!==null && allLeads[editingId].avatar) leadObj.avatar=allLeads[editingId].avatar;
+    saveLead(leadObj);
+  }
+}
+
+// SAVE LEAD
+function saveLead(lead){
+  if(editingId!==null) allLeads[editingId]=lead;
+  else allLeads.push(lead);
+  localStorage.setItem("leads",JSON.stringify(allLeads));
+  closeModal();
+  loadLeads();
+}
+
+// EDIT/DELETE
+function editLead(id){
+  editingId=id;
+  const lead=allLeads[id];
+  document.getElementById("modalTitle").innerText="Edit Lead";
+  document.getElementById("modalName").value=lead.name;
+  document.getElementById("modalEmail").value=lead.email;
+  document.getElementById("modalStatus").value=lead.status;
+  document.getElementById("modalNotes").value=lead.notes;
+  document.getElementById("leadModal").style.display="flex";
+}
+function deleteLead(id){
+  if(confirm("Delete this lead?")){
+    allLeads.splice(id,1);
+    localStorage.setItem("leads",JSON.stringify(allLeads));
+    loadLeads();
+  }
+}
+
+// SEARCH
+function searchLeads(){
+  const term=document.getElementById("searchInput").value.toLowerCase();
+  displayLeads(allLeads.filter(l=>l.name.toLowerCase().includes(term)||l.email.toLowerCase().includes(term)));
+}
+
+// DRAW CHART
+function drawGraph(){
+  const ctx=document.getElementById("statusChart").getContext("2d");
+  const statusCount={New:0,Contacted:0,Converted:0};
+  allLeads.forEach(l=>{ if(statusCount[l.status]!==undefined) statusCount[l.status]++; });
+  if(statusChart) statusChart.destroy();
+  statusChart=new Chart(ctx,{
+    type:"bar",
+    data:{
+      labels:["New","Contacted","Converted"],
+      datasets:[{label:"Lead Count", data:[statusCount.New,statusCount.Contacted,statusCount.Converted], backgroundColor:["#3b82f6","#6366f1","#10b981"]}]
+    },
+    options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, precision:0}}}
+  });
+  cord.addEventListener("click", () => {
+  isOn = !isOn;
+
+  lamp.classList.toggle("on");
+  loginBox.classList.toggle("show");
+
+  // Show demo box ONLY when login is hidden
+  if (isOn) {
+    demoBox.style.display = "none";   // hide when login shows
+  } else {
+    demoBox.style.display = "block";  // show when login hidden
+  }
+});
+}
+
+// INITIAL LOAD
+window.onload=loadLeads;

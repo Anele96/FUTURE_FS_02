@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="profile-card">
+      <img id="profilePic" class="profile-avatar" src="default-avatar.png" onclick="openProfileUpload()">
+    </div>
+    <div class="nav-buttons">
+      <button onclick="showSection('dashboard')">Dashboard</button>
+      <button onclick="showSection('allLeads')">All Leads</button>
+      <button onclick="logout()">Logout</button>
+      <button id="darkModeBtn" onclick="toggleDarkMode()">🌓</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="section">
+      <h2>Dashboard</h2>
+      <canvas id="statusChart" width="400" height="200"></canvas>
+    </div>
+
+    <!-- ALL LEADS -->
+    <div id="allLeads" class="section" style="display:none;">
+      <h2>All Leads</h2>
+      <input type="text" id="searchInput" placeholder="Search leads..." oninput="searchLeads()">
+      <button onclick="openModal()">+ Add Lead</button>
+      <table>
+        <thead>
+          <tr>
+            <th>Avatar</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Notes</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="leadList"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ADD/EDIT LEAD MODAL -->
+  <div id="leadModal" class="modal">
+    <div class="modal-content">
+      <h3 id="modalTitle">Add Lead</h3>
+      <input type="text" id="modalName" placeholder="Name">
+      <input type="email" id="modalEmail" placeholder="Email">
+      <select id="modalStatus">
+        <option value="New">New</option>
+        <option value="Contacted">Contacted</option>
+        <option value="Converted">Converted</option>
+      </select>
+      <textarea id="modalNotes" placeholder="Notes"></textarea>
+      <input type="file" id="modalAvatar" accept="image/*">
+      <button onclick="submitModal()">Save</button>
+      <button onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
